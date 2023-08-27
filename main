@@ -992,6 +992,7 @@ request(
     }
 )
 
+
 setfpscap = setfpscap
 Drawing = Drawing
 syn = syn
@@ -1000,12 +1001,9 @@ hookmetamethod = hookmetamethod
 newcclosure = newcclosure
 getnamecallmethod = getnamecallmethod
 
-if setfpscap then
-	setfpscap(0)
-end
-
 -- Variables
-
+local realreverse = 0
+local spamDB = false
 local UiLib = loadstring(game:HttpGet("https://pastebin.com/raw/JFzC7iXS"))()
 local NotifyLib = loadstring(game:HttpGet("https://pastebin.com/raw/KRep3e1w"))()
 
@@ -1503,9 +1501,22 @@ UtilitiesSec:AddToggle("No Slowdown", false, function(Value)
 	Utilities.NoSlowdown = Value
 end)
 
+local SpamDBTog = UtilitiesSec:AddToggle("Spam DB", false, function(Value)
+	if Value == true then
+	   if game.Players.LocalPlayer.Backpack:FindFirstChild('DB') then
+		    game.Players.LocalPlayer.Backpack:FindFirstChild('DB').Parent = game.Players.LocalPlayer.Character
+	   end
+	end
+    spamDB = Value
+end)
+
+SpamDBTog:AddKeybind()
+
 local TrashTalkTog = UtilitiesSec:AddToggle("Trash Talk", false, function(Value)
-	local TrashTalkWords = {"sen daddy", "ily sen", "sen is so pro", "sen #1 skid", "its not skidding its called altering!!", "lol ur just too easy", "get me when?", "my cat walked across my keyboard and beat u lol", "nn", "tapped", "1"}
-	ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer(TrashTalkWords[math.random(#TrashTalkWords)], "All")
+    if Value == true then
+	   local TrashTalkWords = {"sen daddy", "ily sen", "sen worshipper", "sen #1 skid", "skidded", "lol ur just too easy", "get me when?", "my cat walked across my keyboard", "nn", "tapped", "1"}
+	   ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer(TrashTalkWords[math.random(#TrashTalkWords)], "All")
+    end
 end)
 
 TrashTalkTog:AddKeybind()
@@ -1605,7 +1616,7 @@ end)
 
 AntiLockSec:AddLabel("Prediction Reverser")
 
-AntiLockSec:AddSlider("Reverse Amount", 0.5, 3.5, 10, 2, function(Value)
+AntiLockSec:AddSlider("Reverse Amount", 0.5, 3.5, 100, 2, function(Value)
 	AntiLock.PredReverseAmt = Value
 end)
 
@@ -1633,7 +1644,7 @@ AntiLockSec:AddDropdown("Desync Velocity", {"Default", "Sky", "Underground"}, "D
 	end
 end)
 
-AntiLockSec:AddSlider("Desync Angles", -50, 0.5, 50, 2, function(Value)
+AntiLockSec:AddSlider("Desync Angles", -50, 0.1, 50, 2, function(Value)
 	AntiLock.DesyncAngles = Value
 end)
 
@@ -1775,6 +1786,14 @@ RunService.Heartbeat:Connect(function()
 end)
 
 RunService.Heartbeat:Connect(function()
+    if spamDB == true then
+	   if game.Players.LocalPlayer.Character:FindFirstChild('DB') then
+	        game:GetService("ReplicatedStorage"):WaitForChild("ToolRemoteEvents"):WaitForChild("DB"):FireServer(game.Players.LocalPlayer:GetMouse().Hit.p, game:GetService("Players").LocalPlayer.Character.DB)
+            game:GetService("ReplicatedStorage"):WaitForChild("ToolRemoteEvents"):WaitForChild("DB"):FireServer(game.Players.LocalPlayer:GetMouse().Hit.p, game:GetService("Players").LocalPlayer.Character.DB)
+       end
+	   game:GetService("ReplicatedStorage"):WaitForChild("ReloadWeapon"):FireServer()
+       game.Players.LocalPlayer.Backpack['DB'].Parent =  game.Players.LocalPlayer.Character
+    end
 	if AntiLock.Enabled then
 		local RootPart = LocalPlr.Character.HumanoidRootPart
 		local Velocity, AssemblyVelocity, Cframe = RootPart.Velocity, RootPart.AssemblyLinearVelocity, RootPart.CFrame
@@ -1810,8 +1829,8 @@ RunService.Heartbeat:Connect(function()
 			RootPart.Velocity = Velocity
 
 		elseif AntiLock.Mode == "Prediction Reverser" then
-			RootPart.CFrame = Cframe - LocalPlr.Character.Humanoid.MoveDirection * AntiLock.PredReverseAmt / 10
-
+			realreverse = AntiLock.PredReverseAmt + (math.random(1,AntiLock.PredReverseAmt) / AntiLock.PredReverseAmt *  math.random(1,7))
+			RootPart.CFrame = Cframe - LocalPlr.Character.Humanoid.MoveDirection * (realreverse / 10)
 		elseif AntiLock.Mode == "LookVector" then
 			RootPart.Velocity = Cframe.lookVector * AntiLock.LookVecAmt
 			RunService.RenderStepped:Wait()
@@ -2094,7 +2113,9 @@ RunService.Stepped:Connect(function()
 end)
 
 RunService.Stepped:Connect(function()
-	game.Players.LocalPlayer.PlayerGui.JumpCooldown.Enabled = not Utilities.NoJumpCooldown
+    if game.Players.LocalPlayer.PlayerGui:FindFirstChild('JumpCooldown') then
+	   game.Players.LocalPlayer.PlayerGui.JumpCooldown.Enabled = not Utilities.NoJumpCooldown
+    end
 end)
 
 RunService.Stepped:Connect(function()
@@ -2231,13 +2252,13 @@ RunService.RenderStepped:Connect(function()
 		if CameraAimbot.AimMethod == "Camera" then
 			if CameraAimbot.Resolver then
 				if CameraAimbot.Smoothing then
-					Workspace.CurrentCamera.CFrame = Workspace.CurrentCamera.CFrame:Lerp(CFrame.new(Workspace.CurrentCamera.CFrame.p, CamlockPlr.Character[CameraAimbot.RealHitPart].Position + Vector3.new(0, CameraAimbot.RealJumpOffset, 0) + (CamlockPlr.Character.Humanoid.MoveDirection * CameraAimbot.RealPrediction * CamlockPlr.Character.Humanoid.WalkSpeed)), CameraAimbot.Smoothness, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut)
+					Workspace.CurrentCamera.CFrame = Workspace.CurrentCamera.CFrame:Lerp(CFrame.new(Workspace.CurrentCamera.CFrame.p, CamlockPlr.Character[CameraAimbot.RealHitPart].Position + Vector3.new(0, CameraAimbot.RealJumpOffset, 0) + (CamlockPlr.Character.Humanoid.MoveDirection * CameraAimbot.RealPrediction * CamlockPlr.Character.Humanoid.WalkSpeed)), CameraAimbot.Smoothness, Enum.EasingStyle.Circular, Enum.EasingDirection.InOut)
 				else
 					Workspace.CurrentCamera.CFrame = CFrame.new(Workspace.CurrentCamera.CFrame.p, CamlockPlr.Character[CameraAimbot.RealHitPart].Position + Vector3.new(0, CameraAimbot.RealJumpOffset, 0) + (CamlockPlr.Character.Humanoid.MoveDirection * CameraAimbot.RealPrediction * CamlockPlr.Character.Humanoid.WalkSpeed))
 				end
 			else
 				if CameraAimbot.Smoothing then
-					Workspace.CurrentCamera.CFrame = Workspace.CurrentCamera.CFrame:Lerp(CFrame.new(Workspace.CurrentCamera.CFrame.p, CamlockPlr.Character[CameraAimbot.RealHitPart].Position + Vector3.new(0, CameraAimbot.RealJumpOffset, 0) + (CamlockPlr.Character[CameraAimbot.RealHitPart].Velocity * CameraAimbot.RealPrediction)), CameraAimbot.Smoothness, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut)
+					Workspace.CurrentCamera.CFrame = Workspace.CurrentCamera.CFrame:Lerp(CFrame.new(Workspace.CurrentCamera.CFrame.p, CamlockPlr.Character[CameraAimbot.RealHitPart].Position + Vector3.new(0, CameraAimbot.RealJumpOffset, 0) + (CamlockPlr.Character[CameraAimbot.RealHitPart].Velocity * CameraAimbot.RealPrediction)), CameraAimbot.Smoothness, Enum.EasingStyle.Circular, Enum.EasingDirection.InOut)
 				else
 					Workspace.CurrentCamera.CFrame = CFrame.new(Workspace.CurrentCamera.CFrame.p, CamlockPlr.Character[CameraAimbot.RealHitPart].Position + Vector3.new(0, CameraAimbot.RealJumpOffset, 0) + (CamlockPlr.Character[CameraAimbot.RealHitPart].Velocity * CameraAimbot.RealPrediction))
 				end
