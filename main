@@ -1363,7 +1363,7 @@ UserInputService.InputBegan:Connect(function(Key)
 			if OnScreen then
 				TargBindEnabled = true
 				TargetPlr = ClosestPlr(TargetAimbot.RealHitPart, TargetAimbot.UseFov, TargFovCircle)
-
+                                game:GetService("ReplicatedStorage"):WaitForChild("DefaultChatSystemChatEvents"):WaitForChild("SayMessageRequest"):FireServer("Locked on: ".. TargetPlr.DisplayName , "All")
 				if TargetAimbot.Notify then
 					NotifyLib.Notify({
 						Title = "Azure Modded", 
