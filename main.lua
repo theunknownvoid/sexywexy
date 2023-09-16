@@ -10,7 +10,6 @@ getnamecallmethod = getnamecallmethod
 
 -- Variables
 local realreverse = 0
-local spamDB = false
 local UiLib = loadstring(game:HttpGet("https://pastebin.com/raw/JFzC7iXS"))()
 local NotifyLib = loadstring(game:HttpGet("https://pastebin.com/raw/KRep3e1w"))()
 
@@ -508,17 +507,6 @@ UtilitiesSec:AddToggle("No Slowdown", false, function(Value)
 	Utilities.NoSlowdown = Value
 end)
 
-local SpamDBTog = UtilitiesSec:AddToggle("Spam DB", false, function(Value)
-	if Value == true then
-	   if game.Players.LocalPlayer.Backpack:FindFirstChild('DB') then
-		    game.Players.LocalPlayer.Backpack:FindFirstChild('DB').Parent = game.Players.LocalPlayer.Character
-	   end
-	end
-    spamDB = Value
-end)
-
-SpamDBTog:AddKeybind()
-
 local TrashTalkTog = UtilitiesSec:AddToggle("Trash Talk", false, function(Value)
     if Value == true then
 	   local TrashTalkWords = {"sen daddy", "ily sen", "sen worshipper", "sen #1 skid", "skidded", "lol ur just too easy", "get me when?", "my cat walked across my keyboard", "nn", "tapped", "1"}
@@ -793,14 +781,6 @@ RunService.Heartbeat:Connect(function()
 end)
 
 RunService.Heartbeat:Connect(function()
-    if spamDB == true then
-	   if game.Players.LocalPlayer.Character:FindFirstChild('DB') then
-	        game:GetService("ReplicatedStorage"):WaitForChild("ToolRemoteEvents"):WaitForChild("DB"):FireServer(game.Players.LocalPlayer:GetMouse().Hit.p, game:GetService("Players").LocalPlayer.Character.DB)
-            game:GetService("ReplicatedStorage"):WaitForChild("ToolRemoteEvents"):WaitForChild("DB"):FireServer(game.Players.LocalPlayer:GetMouse().Hit.p, game:GetService("Players").LocalPlayer.Character.DB)
-       end
-	   game:GetService("ReplicatedStorage"):WaitForChild("ReloadWeapon"):FireServer()
-       game.Players.LocalPlayer.Backpack['DB'].Parent =  game.Players.LocalPlayer.Character
-    end
 	if AntiLock.Enabled then
 		local RootPart = LocalPlr.Character.HumanoidRootPart
 		local Velocity, AssemblyVelocity, Cframe = RootPart.Velocity, RootPart.AssemblyLinearVelocity, RootPart.CFrame
